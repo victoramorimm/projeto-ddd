@@ -1,3 +1,6 @@
+import EventDispatcher from "../event/@shared/event-dispatcher";
+import CustomerChangedAddressEvent from "../event/customer/customer-changed-address.event";
+import CustomerCreatedEvent from "../event/customer/customer-created.event";
 import Address from "./adress";
 
 export class Customer {
@@ -11,6 +14,12 @@ export class Customer {
     this._id = id;
     this._name = name;
     this.validate();
+  }
+
+  static create(id: string, name: string, eventDispatcher: EventDispatcher) {
+    const customer = new Customer(id, name);
+    eventDispatcher.notify(new CustomerCreatedEvent(new Date(), { id, name }));
+    return customer;
   }
 
   validate() {
@@ -27,8 +36,13 @@ export class Customer {
     this._name = name;
   }
 
-  changeAddress(address: Address) {
+  changeAddress(address: Address, eventDispatcher?: EventDispatcher) {
     this._address = address;
+    if (eventDispatcher) {
+      eventDispatcher.notify(
+        new CustomerChangedAddressEvent(new Date(), { customer: this, address })
+      );
+    }
   }
 
   activate() {
